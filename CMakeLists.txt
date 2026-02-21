@@ -20,6 +20,8 @@ add_executable(cpp_passman main.cpp
         PasswordDatabase.h
         NewEntryDialog.cpp
         NewEntryDialog.h
+        EditEntryDialog.cpp
+        EditEntryDialog.h
 )
 
 target_link_libraries(cpp_passman

@@ -4,6 +4,8 @@
 #include "NewEntryDialog.h"
 #include <wx/listctrl.h>
 
+#include "EditEntryDialog.h"
+
 using namespace std;
 
 class PasswordManagerApp : public wxApp {
@@ -19,7 +21,8 @@ private:
     enum {
         ID_DELETE = wxID_HIGHEST + 1,
         ID_LIST_SELECT,
-        ID_NEW_DB
+        ID_NEW_DB,
+        ID_EDIT = wxID_HIGHEST + 4
     };
 
 public:
@@ -39,6 +42,7 @@ private:
     void OnEntrySelected(wxListEvent&);
     void OnCloseWindow(wxCloseEvent&);
     void OnNewDatabase(wxCommandEvent&);
+    void OnEditEntry(wxCommandEvent&);
 };
 
 bool PasswordManagerApp::OnInit() {
@@ -63,6 +67,7 @@ PasswordManagerFrame::PasswordManagerFrame()
     Bind(wxEVT_LIST_ITEM_SELECTED, &PasswordManagerFrame::OnEntrySelected, this, ID_LIST_SELECT);
     Bind(wxEVT_CLOSE_WINDOW, &PasswordManagerFrame::OnCloseWindow, this);
     Bind(wxEVT_MENU, &PasswordManagerFrame::OnNewDatabase, this, ID_NEW_DB);
+    Bind(wxEVT_MENU, &PasswordManagerFrame::OnEditEntry, this, ID_EDIT);
 
     enableMenuItems(false);
 }
@@ -73,6 +78,7 @@ void PasswordManagerFrame::createMenu() {
     menuFile->Append(wxID_OPEN, "&Open Database...\tCtrl+O");
     menuFile->AppendSeparator();
     menuFile->Append(wxID_NEW, "&New Entry\tCtrl+Shift+N");
+    menuFile->Append(ID_EDIT, "&Edit Entry\tCtrl+E");
     menuFile->Append(ID_DELETE, "&Delete Entry\tDel");
     menuFile->AppendSeparator();
     menuFile->Append(wxID_SAVE, "&Save\tCtrl+S");
@@ -231,8 +237,32 @@ void PasswordManagerFrame::OnNewDatabase(wxCommandEvent& event) {
 void PasswordManagerFrame::enableMenuItems(bool enabled) {
     wxMenuBar* menuBar = GetMenuBar();
     menuBar->Enable(wxID_NEW, enabled);
+    menuBar->Enable(ID_EDIT, enabled);
     menuBar->Enable(ID_DELETE, enabled);
     menuBar->Enable(wxID_SAVE, enabled);
 }
+
+void PasswordManagerFrame::OnEditEntry(wxCommandEvent& event) {
+    long item = entryList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+    if (item == -1 || !database || !database->isUnlocked()) {
+        wxMessageBox("Please select an entry first!", "Error");
+        return;
+    }
+
+    const auto& entries = database->getEntries();
+    if (item >= (long)entries.size()) return;
+
+    EditEntryDialog dialog(this, entries[item]);
+    if (dialog.ShowModal() == wxID_OK) {
+        PasswordEntry updatedEntry = dialog.getEntry();
+        if (database->updateEntry(item, updatedEntry)) {  // ← EINFACH!
+            refreshList();
+            SetStatusText("Entry updated", 0);
+        } else {
+            wxMessageBox("Update failed!", "Error");
+        }
+    }
+}
+
 
 wxIMPLEMENT_APP(PasswordManagerApp);

@@ -293,6 +293,16 @@ void PasswordDatabase::lock() {
     unlocked = false;
 }
 
+bool PasswordDatabase::updateEntry(size_t index, const PasswordEntry& newEntry) {
+    if (!unlocked || index >= entries.size()) return false;
+
+    entries[index] = newEntry;
+    entries[index].modified = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+
+    return true;
+}
+
 PasswordDatabase::~PasswordDatabase() {
     lock();
 }

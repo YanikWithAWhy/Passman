@@ -33,6 +33,7 @@ public:
     size_t size() const { return entries.size(); }
     bool isUnlocked() const { return unlocked; }
     void lock();
+    bool updateEntry(size_t index, const PasswordEntry& entry);
 
     ~PasswordDatabase();
 
