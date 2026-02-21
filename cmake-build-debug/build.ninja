@@ -70,6 +70,13 @@ build CMakeFiles/cpp_passman.dir/NewEntryDialog.cpp.obj: CXX_COMPILER__cpp_passm
   OBJECT_DIR = CMakeFiles\cpp_passman.dir
   OBJECT_FILE_DIR = CMakeFiles\cpp_passman.dir
 
+build CMakeFiles/cpp_passman.dir/PasswordStrength.cpp.obj: CXX_COMPILER__cpp_passman_unscanned_Debug C$:/Users/Yanik/cpp_passman/PasswordStrength.cpp || cmake_object_order_depends_target_cpp_passman
+  DEP_FILE = CMakeFiles\cpp_passman.dir\PasswordStrength.cpp.obj.d
+  FLAGS = -g -std=gnu++17 -fdiagnostics-color=always
+  INCLUDES = -IC:/msys64/mingw64/include/wx-3.2 -IC:/msys64/mingw64/lib/wx/include/msw-unicode-3.2
+  OBJECT_DIR = CMakeFiles\cpp_passman.dir
+  OBJECT_FILE_DIR = CMakeFiles\cpp_passman.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target cpp_passman
@@ -78,7 +85,7 @@ build CMakeFiles/cpp_passman.dir/NewEntryDialog.cpp.obj: CXX_COMPILER__cpp_passm
 #############################################
 # Link the executable cpp_passman.exe
 
-build cpp_passman.exe: CXX_EXECUTABLE_LINKER__cpp_passman_Debug CMakeFiles/cpp_passman.dir/main.cpp.obj CMakeFiles/cpp_passman.dir/PasswordDatabase.cpp.obj CMakeFiles/cpp_passman.dir/NewEntryDialog.cpp.obj | C$:/msys64/mingw64/lib/libsodium.dll.a
+build cpp_passman.exe: CXX_EXECUTABLE_LINKER__cpp_passman_Debug CMakeFiles/cpp_passman.dir/main.cpp.obj CMakeFiles/cpp_passman.dir/PasswordDatabase.cpp.obj CMakeFiles/cpp_passman.dir/NewEntryDialog.cpp.obj CMakeFiles/cpp_passman.dir/PasswordStrength.cpp.obj | C$:/msys64/mingw64/lib/libsodium.dll.a
   FLAGS = -g
   LINK_LIBRARIES = -lwx_baseu-3.2  -lwx_mswu_core-3.2  -lwx_mswu_adv-3.2  -lwxexpat-3.2  -lwxjpeg-3.2  -lwxpng-3.2  -lwxtiff-3.2  -lwxzlib-3.2  -lgdi32  -lcomdlg32  -lwinspool  -lwinmm  -lshell32  -lole32  -loleaut32  -luuid  -lodbc32  -lodbccp32  C:/msys64/mingw64/lib/libsodium.dll.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\cpp_passman.dir

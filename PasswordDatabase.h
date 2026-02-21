@@ -23,6 +23,8 @@ class PasswordDatabase {
 public:
     PasswordDatabase(const std::string& filename);
 
+    bool createNewDatabase(const std::string& masterPassword);
+
     bool unlock(const std::string& masterPassword);
     bool save();
     bool addEntry(const PasswordEntry& entry);
@@ -32,16 +34,20 @@ public:
     bool isUnlocked() const { return unlocked; }
     void lock();
 
+    ~PasswordDatabase();
+
 private:
     std::vector<PasswordEntry> entries;
-    std::array<unsigned char, crypto_secretbox_KEYBYTES> key;
+    unsigned char* key;
     std::array<unsigned char, crypto_pwhash_SALTBYTES> salt;
     bool unlocked = false;
     std::string filename;
+    bool keyLocked = false;
 
     bool deriveKey(const std::string& password);
-    bool cryptoLoad();
     bool cryptoSave();
+    void lockKey();
+    void unlockKey();
 };
 
 #endif

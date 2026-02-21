@@ -13,12 +13,13 @@ public:
 
 class PasswordManagerFrame : public wxFrame {
 private:
-    unique_ptr<PasswordDatabase> database;;
+    unique_ptr<PasswordDatabase> database;
     wxListCtrl* entryList;
 
     enum {
         ID_DELETE = wxID_HIGHEST + 1,
-        ID_LIST_SELECT
+        ID_LIST_SELECT,
+        ID_NEW_DB
     };
 
 public:
@@ -37,6 +38,7 @@ private:
     void OnExit(wxCommandEvent&);
     void OnEntrySelected(wxListEvent&);
     void OnCloseWindow(wxCloseEvent&);
+    void OnNewDatabase(wxCommandEvent&);
 };
 
 bool PasswordManagerApp::OnInit() {
@@ -46,7 +48,7 @@ bool PasswordManagerApp::OnInit() {
 }
 
 PasswordManagerFrame::PasswordManagerFrame()
-    : wxFrame(nullptr, wxID_ANY, "Password Manager v1.0", wxDefaultPosition, wxSize(1000, 700)) {
+    : wxFrame(nullptr, wxID_ANY, "PassMan v1.0", wxDefaultPosition, wxSize(1000, 700)) {
 
     createMenu();
     createUI();
@@ -60,15 +62,17 @@ PasswordManagerFrame::PasswordManagerFrame()
     Bind(wxEVT_MENU, &PasswordManagerFrame::OnExit, this, wxID_EXIT);
     Bind(wxEVT_LIST_ITEM_SELECTED, &PasswordManagerFrame::OnEntrySelected, this, ID_LIST_SELECT);
     Bind(wxEVT_CLOSE_WINDOW, &PasswordManagerFrame::OnCloseWindow, this);
+    Bind(wxEVT_MENU, &PasswordManagerFrame::OnNewDatabase, this, ID_NEW_DB);
 
     enableMenuItems(false);
 }
 
 void PasswordManagerFrame::createMenu() {
     wxMenu* menuFile = new wxMenu();
+    menuFile->Append(ID_NEW_DB, "&New Database...\tCtrl+N");
     menuFile->Append(wxID_OPEN, "&Open Database...\tCtrl+O");
     menuFile->AppendSeparator();
-    menuFile->Append(wxID_NEW, "&New Entry\tCtrl+N");
+    menuFile->Append(wxID_NEW, "&New Entry\tCtrl+Shift+N");
     menuFile->Append(ID_DELETE, "&Delete Entry\tDel");
     menuFile->AppendSeparator();
     menuFile->Append(wxID_SAVE, "&Save\tCtrl+S");
@@ -185,6 +189,42 @@ void PasswordManagerFrame::refreshList() {
 
         wxDateTime modifiedTime((time_t)entry.modified);
         entryList->SetItem(itemId, 3, modifiedTime.Format("%d.%m.%Y %H:%M"));
+    }
+}
+
+void PasswordManagerFrame::OnNewDatabase(wxCommandEvent& event) {
+
+    if (database && database->isUnlocked()) {
+        if (wxMessageBox("Save current database before creating new?",
+                        "Save?", wxYES_NO | wxICON_QUESTION) == wxYES) {
+            database->save();
+                        }
+    }
+
+    wxFileDialog dialog(this, "Create New Database", "", "new.pmdb",
+                       "PMDB Files (*.pmdb)|*.pmdb|All Files (*.*)|*.*",
+                       wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+    if (dialog.ShowModal() != wxID_OK) return;
+
+    wxString password1 = wxGetPasswordFromUser(
+        "Set master password:", "New Database", "", this);
+    if (password1.empty()) return;
+
+    wxString password2 = wxGetPasswordFromUser(
+        "Confirm master password:", "New Database", "", this);
+    if (password1 != password2) {
+        wxMessageBox("Passwords don't match!", "Error");
+        return;
+    }
+
+    database = std::make_unique<PasswordDatabase>(dialog.GetPath().ToStdString());
+    if (database->createNewDatabase(password1.ToStdString())) {
+        refreshList();
+        SetStatusText("New database created! (locked)", 0);
+        enableMenuItems(false);
+    } else {
+        wxMessageBox("Failed to create new database!", "Error");
     }
 }
 
