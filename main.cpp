@@ -3,6 +3,7 @@
 #include "PasswordDatabase.h"
 #include "NewEntryDialog.h"
 #include <wx/listctrl.h>
+#include <wx/clipbrd.h>
 
 #include "EditEntryDialog.h"
 
@@ -23,8 +24,12 @@ private:
         ID_LIST_SELECT,
         ID_NEW_DB,
         ID_EDIT = wxID_HIGHEST + 4,
-        ID_CONTEXT_MENU
+        ID_CONTEXT_MENU,
+        ID_COPY_USERNAME,
+        ID_COPY_PASSWORD
     };
+
+    wxTimer* clipboardTimer;
 
 public:
     PasswordManagerFrame();
@@ -45,6 +50,11 @@ private:
     void OnNewDatabase(wxCommandEvent&);
     void OnEditEntry(wxCommandEvent&);
     void OnRightClick(wxListEvent&);
+    void OnCopyUsername(wxCommandEvent& event);
+    void OnCopyPassword(wxCommandEvent& event);
+    void OnClipboardTimeout(wxTimerEvent& event);
+
+    ~PasswordManagerFrame();
 };
 
 bool PasswordManagerApp::OnInit() {
@@ -71,6 +81,12 @@ PasswordManagerFrame::PasswordManagerFrame()
     Bind(wxEVT_MENU, &PasswordManagerFrame::OnNewDatabase, this, ID_NEW_DB);
     Bind(wxEVT_MENU, &PasswordManagerFrame::OnEditEntry, this, ID_EDIT);
     Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &PasswordManagerFrame::OnRightClick, this, ID_LIST_SELECT);
+
+    clipboardTimer = new wxTimer(this, wxID_ANY);  // ← Timer erstellen
+    Bind(wxEVT_TIMER, &PasswordManagerFrame::OnClipboardTimeout, this, wxID_ANY);
+
+    Bind(wxEVT_MENU, &PasswordManagerFrame::OnCopyUsername, this, ID_COPY_USERNAME);
+    Bind(wxEVT_MENU, &PasswordManagerFrame::OnCopyPassword, this, ID_COPY_PASSWORD);
 
     enableMenuItems(false);
 }
@@ -268,18 +284,65 @@ void PasswordManagerFrame::OnEditEntry(wxCommandEvent& event) {
 }
 
 void PasswordManagerFrame::OnRightClick(wxListEvent& event) {
-
     long item = event.GetIndex();
-    if (item == -1 || !database || !database->isUnlocked())
-        return;
+    if (item == -1 || !database || !database->isUnlocked()) return;
+
+    entryList->SetItemState(item, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
 
     wxMenu menu;
     menu.Append(ID_EDIT, "Edit Entry");
     menu.Append(ID_DELETE, "Delete Entry");
+    menu.AppendSeparator();
+    menu.Append(ID_COPY_USERNAME, "Copy Username");
+    menu.Append(ID_COPY_PASSWORD, "Copy Password");
 
-    // Optional kannst du hier noch z. B. "Copy username/password" später ergänzen
-    entryList->SetItemState(item, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
     PopupMenu(&menu);
+}
+
+void PasswordManagerFrame::OnCopyUsername(wxCommandEvent& event) {
+    long item = entryList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+    if (item == -1 || !database || !database->isUnlocked()) return;
+
+    const auto& entries = database->getEntries();
+    if (item < (long)entries.size()) {
+        if (wxTheClipboard->Open()) {  // ← Open() statt OpenData()
+            wxTheClipboard->SetData(new wxTextDataObject(entries[item].username));
+            wxTheClipboard->Close();
+            SetStatusText("Username copied - clears in 20s", 0);
+            clipboardTimer->Start(20000, wxTIMER_ONE_SHOT);
+        }
+    }
+}
+
+void PasswordManagerFrame::OnCopyPassword(wxCommandEvent& event) {
+    long item = entryList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+    if (item == -1 || !database || !database->isUnlocked()) return;
+
+    const auto& entries = database->getEntries();
+    if (item < (long)entries.size()) {
+        if (wxTheClipboard->Open()) {
+            wxTheClipboard->Clear(); // alten Inhalt erst mal weg
+            wxTheClipboard->SetData(new wxTextDataObject(entries[item].password));
+            wxTheClipboard->Close();
+            SetStatusText("Password copied - clears in 20s", 0);
+            clipboardTimer->Start(20000, wxTIMER_ONE_SHOT);
+        }
+    }
+}
+
+void PasswordManagerFrame::OnClipboardTimeout(wxTimerEvent& event) {
+    if (wxTheClipboard->Open()) {
+        wxTheClipboard->Clear();  // ← Clear() statt SetData(nullptr)
+        wxTheClipboard->Close();
+        SetStatusText("Clipboard cleared", 0);
+    }
+}
+
+PasswordManagerFrame::~PasswordManagerFrame() {
+    if (clipboardTimer) {
+        clipboardTimer->Stop();
+        delete clipboardTimer;
+    }
 }
 
 wxIMPLEMENT_APP(PasswordManagerApp);
