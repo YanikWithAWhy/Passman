@@ -71,11 +71,21 @@ EditEntryDialog::EditEntryDialog(wxWindow* parent, const PasswordEntry& initialE
 PasswordEntry EditEntryDialog::getEntry() {
     entry.title = titleCtrl->GetValue().ToStdString();
     entry.username = usernameCtrl->GetValue().ToStdString();
-    entry.password = passwordCtrl->GetValue().ToStdString();  // Immer vom sicheren Feld!
     entry.notes = notesCtrl->GetValue().ToStdString();
     entry.url = urlCtrl->GetValue().ToStdString();
 
-    // Nur modified updaten, created bleibt gleich
+    // ✅ FIX: IMMER das SICHBARE Passwort-Feld lesen!
+    wxString passwordValue;
+    if (showPasswordCheck->IsChecked()) {
+        // Checkbox an = sichtbares Feld aktiv
+        passwordValue = passwordVisibleCtrl->GetValue();
+    } else {
+        // Checkbox aus = passwordCtrl aktiv
+        passwordValue = passwordCtrl->GetValue();
+    }
+    entry.password = passwordValue.ToStdString();
+
+    // Timestamp updaten
     entry.modified = std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::system_clock::now().time_since_epoch()).count();
 
@@ -84,7 +94,7 @@ PasswordEntry EditEntryDialog::getEntry() {
 
 void EditEntryDialog::OnShowPassword(wxCommandEvent& event) {
     Freeze();
-    wxString currentText = passwordCtrl->GetValue();
+    wxString currentText = passwordCtrl->GetValue();  // Basisquelle
 
     if (showPasswordCheck->IsChecked()) {
         passwordCtrl->Hide();
@@ -94,7 +104,7 @@ void EditEntryDialog::OnShowPassword(wxCommandEvent& event) {
         passwordVisibleCtrl->SetInsertionPointEnd();
     } else {
         passwordVisibleCtrl->Hide();
-        passwordCtrl->SetValue(currentText);
+        passwordCtrl->SetValue(currentText);  // ← Synchronisation!
         passwordCtrl->Show();
         passwordCtrl->SetFocus();
         passwordCtrl->SetInsertionPointEnd();

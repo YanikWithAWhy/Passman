@@ -15,7 +15,12 @@ public:
 };
 
 class PasswordManagerFrame : public wxFrame {
+
+public:
+    PasswordManagerFrame();
+
 private:
+
     unique_ptr<PasswordDatabase> database;
     wxListCtrl* entryList;
 
@@ -31,10 +36,6 @@ private:
 
     wxTimer* clipboardTimer;
 
-public:
-    PasswordManagerFrame();
-
-private:
     void createMenu();
     void createUI();
     void refreshList();
