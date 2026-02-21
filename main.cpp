@@ -1,19 +1,61 @@
-#include <iostream>
+#include <wx/wx.h>
 
-int main() {
+class PasswordManagerApp : public wxApp {
+public:
+    bool OnInit() override;
+};
 
-    auto lang = "C++";
-    std::cout << "Hello and welcome to " << lang << "!\n";
+class PasswordManagerFrame : public wxFrame {
+public:
+    PasswordManagerFrame() : wxFrame(NULL, wxID_ANY, "PassMan", wxDefaultPosition, wxSize(800, 600)) {
 
-    for (int i = 1; i <= 5; i++) {
+        wxMenu* menuFile = new wxMenu();
+        menuFile->Append(wxID_NEW, wxT("New Database"));
+        menuFile->Append(wxID_NEW, "&New Entry");
+        menuFile->AppendSeparator();
+        menuFile->Append(wxID_EXIT, "&Exit");
 
-        std::cout << "i = " << i << std::endl;
+        wxMenu* menuEdit = new wxMenu();
+        wxMenu* menuTools = new wxMenu();
+
+        wxMenuBar* menuBar = new wxMenuBar();
+        menuBar->Append(menuFile, "&File");
+        menuBar->Append(menuEdit, "&Edit");
+        menuBar->Append(menuTools, "&Tools");
+        SetMenuBar(menuBar);
+
+        CreateStatusBar(2);
+        SetStatusText("Ready.");
+
+        Bind(wxEVT_MENU, &PasswordManagerFrame::OnExit, this, wxID_EXIT);
+
+        // Catch window close
+        Bind(wxEVT_CLOSE_WINDOW, &PasswordManagerFrame::OnCloseWindow, this);
     }
 
-    return 0;
+private:
+    void OnExit(wxCommandEvent& event) {
+        Close();
+    }
+
+    void OnCloseWindow(wxCloseEvent& event) {
+        int ans = wxMessageBox("Confirm Exit?", "Exit", wxYES_NO | wxCANCEL, this);
+
+        if (ans == wxYES) {
+            event.Skip();
+            SetStatusText("Closing", 0);
+        } else {
+            event.Veto();
+        }
+
+    }
+
+};
+
+bool PasswordManagerApp::OnInit() {
+    PasswordManagerFrame* frame = new PasswordManagerFrame();
+    frame->Show(true);
+    return true;
 }
 
-// TIP See CLion help at <a
-// href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>.
-//  Also, you can try interactive lessons for CLion by selecting
-//  'Help | Learn IDE Features' from the main menu.
+wxIMPLEMENT_APP(PasswordManagerApp);
