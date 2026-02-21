@@ -20,8 +20,7 @@ add_executable(cpp_passman main.cpp
         PasswordDatabase.h
         NewEntryDialog.cpp
         NewEntryDialog.h
-        PasswordStrength.cpp
-        PasswordStrength.h)
+)
 
 target_link_libraries(cpp_passman
         wx_baseu-3.2

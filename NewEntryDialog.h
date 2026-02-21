@@ -1,4 +1,3 @@
-
 #ifndef NEW_ENTRY_DIALOG_H
 #define NEW_ENTRY_DIALOG_H
 
@@ -12,15 +11,16 @@ public:
     PasswordEntry getEntry();
 
 private:
-    void initUI();
+    void OnShowPassword(wxCommandEvent& event);
 
     wxTextCtrl* titleCtrl;
     wxTextCtrl* usernameCtrl;
-    wxTextCtrl* passwordCtrl;
+    wxTextCtrl* passwordCtrl;           // Verstecktes Feld (immer wxTE_PASSWORD)
+    wxTextCtrl* passwordVisibleCtrl;    // Sichtbares Feld (normal)
     wxTextCtrl* notesCtrl;
     wxTextCtrl* urlCtrl;
+    wxCheckBox* showPasswordCheck;
     PasswordEntry entry;
 };
-
 
 #endif //NEW_ENTRY_DIALOG_H
