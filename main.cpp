@@ -88,6 +88,13 @@ PasswordManagerFrame::PasswordManagerFrame()
     Bind(wxEVT_MENU, &PasswordManagerFrame::OnCopyUsername, this, ID_COPY_USERNAME);
     Bind(wxEVT_MENU, &PasswordManagerFrame::OnCopyPassword, this, ID_COPY_PASSWORD);
 
+    wxAcceleratorEntry entries[2];
+    entries[0].Set(wxACCEL_CTRL, (int)'B', ID_COPY_USERNAME);
+    entries[1].Set(wxACCEL_CTRL, (int)'C', ID_COPY_PASSWORD);
+
+    wxAcceleratorTable accelTable(2, entries);
+    SetAcceleratorTable(accelTable);
+
     enableMenuItems(false);
 }
 
@@ -293,8 +300,8 @@ void PasswordManagerFrame::OnRightClick(wxListEvent& event) {
     menu.Append(ID_EDIT, "Edit Entry");
     menu.Append(ID_DELETE, "Delete Entry");
     menu.AppendSeparator();
-    menu.Append(ID_COPY_USERNAME, "Copy Username");
-    menu.Append(ID_COPY_PASSWORD, "Copy Password");
+    menu.Append(ID_COPY_USERNAME, "Copy Username\tCtrl+B");
+    menu.Append(ID_COPY_PASSWORD, "Copy Password\tCtrl+C");
 
     PopupMenu(&menu);
 }
