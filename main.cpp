@@ -22,7 +22,8 @@ private:
         ID_DELETE = wxID_HIGHEST + 1,
         ID_LIST_SELECT,
         ID_NEW_DB,
-        ID_EDIT = wxID_HIGHEST + 4
+        ID_EDIT = wxID_HIGHEST + 4,
+        ID_CONTEXT_MENU
     };
 
 public:
@@ -43,6 +44,7 @@ private:
     void OnCloseWindow(wxCloseEvent&);
     void OnNewDatabase(wxCommandEvent&);
     void OnEditEntry(wxCommandEvent&);
+    void OnRightClick(wxListEvent&);
 };
 
 bool PasswordManagerApp::OnInit() {
@@ -68,6 +70,7 @@ PasswordManagerFrame::PasswordManagerFrame()
     Bind(wxEVT_CLOSE_WINDOW, &PasswordManagerFrame::OnCloseWindow, this);
     Bind(wxEVT_MENU, &PasswordManagerFrame::OnNewDatabase, this, ID_NEW_DB);
     Bind(wxEVT_MENU, &PasswordManagerFrame::OnEditEntry, this, ID_EDIT);
+    Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &PasswordManagerFrame::OnRightClick, this, ID_LIST_SELECT);
 
     enableMenuItems(false);
 }
@@ -264,5 +267,19 @@ void PasswordManagerFrame::OnEditEntry(wxCommandEvent& event) {
     }
 }
 
+void PasswordManagerFrame::OnRightClick(wxListEvent& event) {
+
+    long item = event.GetIndex();
+    if (item == -1 || !database || !database->isUnlocked())
+        return;
+
+    wxMenu menu;
+    menu.Append(ID_EDIT, "Edit Entry");
+    menu.Append(ID_DELETE, "Delete Entry");
+
+    // Optional kannst du hier noch z. B. "Copy username/password" später ergänzen
+    entryList->SetItemState(item, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+    PopupMenu(&menu);
+}
 
 wxIMPLEMENT_APP(PasswordManagerApp);
