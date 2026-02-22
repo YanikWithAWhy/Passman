@@ -7,19 +7,20 @@
 
 class EditEntryDialog : public wxDialog {
 public:
-    EditEntryDialog(wxWindow* parent, const PasswordEntry& entry);
+    EditEntryDialog(wxWindow *parent, const PasswordEntry &entry);
+
     PasswordEntry getEntry();
 
 private:
-    void OnShowPassword(wxCommandEvent& event);
+    void OnShowPassword(wxCommandEvent &event);
 
-    wxTextCtrl* titleCtrl;
-    wxTextCtrl* usernameCtrl;
-    wxTextCtrl* passwordCtrl;
-    wxTextCtrl* passwordVisibleCtrl;
-    wxTextCtrl* notesCtrl;
-    wxTextCtrl* urlCtrl;
-    wxCheckBox* showPasswordCheck;
+    wxTextCtrl *titleCtrl;
+    wxTextCtrl *usernameCtrl;
+    wxTextCtrl *passwordCtrl;
+    wxTextCtrl *passwordVisibleCtrl;
+    wxTextCtrl *notesCtrl;
+    wxTextCtrl *urlCtrl;
+    wxCheckBox *showPasswordCheck;
     PasswordEntry entry;
 };
 

@@ -11,9 +11,9 @@ include_directories(
 link_directories("C:/msys64/mingw64/lib")
 
 find_library(SODIUM_LIB sodium PATHS "C:/msys64/mingw64/lib")
-if(NOT SODIUM_LIB)
+if (NOT SODIUM_LIB)
     message(FATAL_ERROR "libsodium not found!")
-endif()
+endif ()
 
 add_executable(cpp_passman main.cpp
         PasswordDatabase.cpp
