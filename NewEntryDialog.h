@@ -7,19 +7,20 @@
 
 class NewEntryDialog : public wxDialog {
 public:
-    NewEntryDialog(wxWindow* parent);
+    NewEntryDialog(wxWindow *parent);
+
     PasswordEntry getEntry();
 
 private:
-    void OnShowPassword(wxCommandEvent& event);
+    void OnShowPassword(wxCommandEvent &event);
 
-    wxTextCtrl* titleCtrl;
-    wxTextCtrl* usernameCtrl;
-    wxTextCtrl* passwordCtrl;           // Verstecktes Feld (immer wxTE_PASSWORD)
-    wxTextCtrl* passwordVisibleCtrl;    // Sichtbares Feld (normal)
-    wxTextCtrl* notesCtrl;
-    wxTextCtrl* urlCtrl;
-    wxCheckBox* showPasswordCheck;
+    wxTextCtrl *titleCtrl;
+    wxTextCtrl *usernameCtrl;
+    wxTextCtrl *passwordCtrl;
+    wxTextCtrl *passwordVisibleCtrl;
+    wxTextCtrl *notesCtrl;
+    wxTextCtrl *urlCtrl;
+    wxCheckBox *showPasswordCheck;
     PasswordEntry entry;
 };
 

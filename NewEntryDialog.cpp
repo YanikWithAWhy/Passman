@@ -3,11 +3,10 @@
 #include <wx/sizer.h>
 #include <wx/wx.h>
 
-NewEntryDialog::NewEntryDialog(wxWindow* parent)
+NewEntryDialog::NewEntryDialog(wxWindow *parent)
     : wxDialog(parent, -1, "New Password Entry", wxDefaultPosition, wxSize(450, 420)) {
-
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer* hSizer;
+    wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *hSizer;
 
     // Title
     hSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -24,16 +23,14 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent)
     hSizer->Add(usernameCtrl, 1, wxEXPAND);
     mainSizer->Add(hSizer, 0, wxEXPAND | wxALL, 5);
 
-    // Password Bereich
-    wxBoxSizer* passwordSizer = new wxBoxSizer(wxHORIZONTAL);
+    // Password
+    wxBoxSizer *passwordSizer = new wxBoxSizer(wxHORIZONTAL);
     passwordSizer->Add(new wxStaticText(this, -1, "Password:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
-    // Beide Felder erstellen
     passwordCtrl = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PASSWORD);
     passwordVisibleCtrl = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, 0);
-    passwordVisibleCtrl->Hide();  // Initial versteckt
+    passwordVisibleCtrl->Hide();
 
-    // BEIDE in EINEM Sizer!
     passwordSizer->Add(passwordCtrl, 1, wxEXPAND);
     passwordSizer->Add(passwordVisibleCtrl, 1, wxEXPAND);
 
@@ -56,20 +53,18 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent)
     mainSizer->Add(notesCtrl, 1, wxEXPAND | wxALL, 5);
 
     // Buttons
-    wxSizer* buttonSizer = CreateStdDialogButtonSizer(wxOK | wxCANCEL);
+    wxSizer *buttonSizer = CreateStdDialogButtonSizer(wxOK | wxCANCEL);
     mainSizer->Add(buttonSizer, 0, wxALIGN_RIGHT | wxALL, 10);
 
     SetSizerAndFit(mainSizer);
 
-    // Event-Binding
     showPasswordCheck->Bind(wxEVT_CHECKBOX, &NewEntryDialog::OnShowPassword, this);
 }
 
 PasswordEntry NewEntryDialog::getEntry() {
-    // IMMER vom sicheren (versteckten) Feld lesen!
     entry.title = titleCtrl->GetValue().ToStdString();
     entry.username = usernameCtrl->GetValue().ToStdString();
-    entry.password = passwordCtrl->GetValue().ToStdString();  // ← Sicher!
+    entry.password = passwordCtrl->GetValue().ToStdString();
     entry.notes = notesCtrl->GetValue().ToStdString();
     entry.url = urlCtrl->GetValue().ToStdString();
 
@@ -81,29 +76,25 @@ PasswordEntry NewEntryDialog::getEntry() {
     return entry;
 }
 
-void NewEntryDialog::OnShowPassword(wxCommandEvent& event) {
+void NewEntryDialog::OnShowPassword(wxCommandEvent &event) {
+    Freeze();
 
-        Freeze();  // ← Layout einfrieren
+    wxString currentText = passwordCtrl->GetValue();
 
-        wxString currentText = passwordCtrl->GetValue();
+    if (showPasswordCheck->IsChecked()) {
+        passwordCtrl->Hide();
+        passwordVisibleCtrl->SetValue(currentText);
+        passwordVisibleCtrl->Show();
+        passwordVisibleCtrl->SetFocus();
+        passwordVisibleCtrl->SetInsertionPointEnd();
+    } else {
+        passwordVisibleCtrl->Hide();
+        passwordCtrl->SetValue(currentText);
+        passwordCtrl->Show();
+        passwordCtrl->SetFocus();
+        passwordCtrl->SetInsertionPointEnd();
+    }
 
-        if (showPasswordCheck->IsChecked()) {
-            // Verstecktes aus, Sichtbares an
-            passwordCtrl->Hide();
-            passwordVisibleCtrl->SetValue(currentText);
-            passwordVisibleCtrl->Show();
-            passwordVisibleCtrl->SetFocus();
-            passwordVisibleCtrl->SetInsertionPointEnd();
-        } else {
-            // Sichtbares aus, Verstecktes an
-            passwordVisibleCtrl->Hide();
-            passwordCtrl->SetValue(currentText);
-            passwordCtrl->Show();
-            passwordCtrl->SetFocus();
-            passwordCtrl->SetInsertionPointEnd();
-        }
-
-        Thaw();  // ← Layout wieder freigeben
-        Layout();
+    Thaw();
+    Layout();
 }
-
