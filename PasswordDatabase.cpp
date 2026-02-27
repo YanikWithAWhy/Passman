@@ -219,7 +219,7 @@ bool PasswordDatabase::cryptoSave() {
     file.write((char *) ciphertext.data(), ciphertext.size());
 
     bool success = file.good();
-    printf("DEBUG: SAVED: %zu bytes plaintext → %zu bytes ciphertext\n",
+    printf("DEBUG: SAVED: %zu bytes plaintext -> %zu bytes ciphertext\n",
            plaintext.size(), ciphertext.size());
 
     return success;
