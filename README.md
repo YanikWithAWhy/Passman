@@ -73,3 +73,5 @@ The project is configured to be built with CMake. The current `CMakeLists.txt` i
     *   **Copy Username:** `Ctrl+B`
     *   **Copy Password:** `Ctrl+C`
 6.  Your changes are saved automatically when you close the application, or you can save manually with **File > Save** (Ctrl+S).
+
+Generated using https://www.gitread.dev/ using commit b5a71b57c06f1bbf38128ad3c37fe6e624c31b17.
