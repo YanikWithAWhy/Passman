@@ -10,7 +10,19 @@ include_directories(
 
 link_directories("C:/msys64/mingw64/lib")
 
-add_executable(cpp_passman main.cpp)
+find_library(SODIUM_LIB sodium PATHS "C:/msys64/mingw64/lib")
+if (NOT SODIUM_LIB)
+    message(FATAL_ERROR "libsodium not found!")
+endif ()
+
+add_executable(cpp_passman main.cpp
+        PasswordDatabase.cpp
+        PasswordDatabase.h
+        NewEntryDialog.cpp
+        NewEntryDialog.h
+        EditEntryDialog.cpp
+        EditEntryDialog.h
+)
 
 target_link_libraries(cpp_passman
         wx_baseu-3.2
@@ -22,4 +34,5 @@ target_link_libraries(cpp_passman
         wxtiff-3.2
         wxzlib-3.2
         gdi32 comdlg32 winspool winmm shell32 ole32 oleaut32 uuid odbc32 odbccp32
+        ${SODIUM_LIB}
 )
