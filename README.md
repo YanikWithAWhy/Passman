@@ -1,5 +1,4 @@
 # PassMan
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/YanikWithAWhy/Passman)
 
 PassMan is a desktop password manager application written in C++. It provides a secure, local-first solution for storing and managing your passwords. The application uses the robust `libsodium` library for cryptographic operations and `wxWidgets` for its graphical user interface.
 
