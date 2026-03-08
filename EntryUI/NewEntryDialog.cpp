@@ -24,7 +24,7 @@ NewEntryDialog::NewEntryDialog(wxWindow *parent)
     hSizer->Add(usernameCtrl, 1, wxEXPAND);
     mainSizer->Add(hSizer, 0, wxEXPAND | wxALL, 5);
 
-    // Password + Button in einer Zeile
+    // Password
     wxBoxSizer *passwordRowSizer = new wxBoxSizer(wxHORIZONTAL);
     passwordRowSizer->Add(new wxStaticText(this, -1, "Password:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
@@ -35,7 +35,6 @@ NewEntryDialog::NewEntryDialog(wxWindow *parent)
     passwordRowSizer->Add(passwordCtrl, 1, wxEXPAND | wxRIGHT, 5);
     passwordRowSizer->Add(passwordVisibleCtrl, 1, wxEXPAND | wxRIGHT, 5);
 
-    // Schlüssel-Button rechts
     generatePasswordBtn = new wxButton(
         this,
         wxID_ANY,
@@ -48,7 +47,7 @@ NewEntryDialog::NewEntryDialog(wxWindow *parent)
 
     mainSizer->Add(passwordRowSizer, 0, wxEXPAND | wxALL, 5);
 
-    // Checkbox darunter
+    // checkbox
     showPasswordCheck = new wxCheckBox(this, -1, "Show password");
     mainSizer->Add(showPasswordCheck, 0, wxLEFT | wxRIGHT, 15);
 

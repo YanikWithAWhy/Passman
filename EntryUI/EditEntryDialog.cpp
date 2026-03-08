@@ -53,7 +53,7 @@ EditEntryDialog::EditEntryDialog(wxWindow *parent, const PasswordEntry &initialE
 
     mainSizer->Add(passwordRowSizer, 0, wxEXPAND | wxALL, 5);
 
-    // Checkbox darunter
+    // checkbox
     showPasswordCheck = new wxCheckBox(this, -1, "Show password");
     mainSizer->Add(showPasswordCheck, 0, wxLEFT | wxRIGHT, 15);
 
