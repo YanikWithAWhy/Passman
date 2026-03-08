@@ -22,6 +22,8 @@ add_executable(cpp_passman main.cpp
         NewEntryDialog.h
         EditEntryDialog.cpp
         EditEntryDialog.h
+        PasswordGeneratorDialog.cpp
+        PasswordGeneratorDialog.h
 )
 
 target_link_libraries(cpp_passman

@@ -2,6 +2,7 @@
 #include <chrono>
 #include <wx/sizer.h>
 #include <wx/wx.h>
+#include "PasswordGeneratorDialog.h"
 
 NewEntryDialog::NewEntryDialog(wxWindow *parent)
     : wxDialog(parent, -1, "New Password Entry", wxDefaultPosition, wxSize(450, 420)) {
@@ -23,20 +24,31 @@ NewEntryDialog::NewEntryDialog(wxWindow *parent)
     hSizer->Add(usernameCtrl, 1, wxEXPAND);
     mainSizer->Add(hSizer, 0, wxEXPAND | wxALL, 5);
 
-    // Password
-    wxBoxSizer *passwordSizer = new wxBoxSizer(wxHORIZONTAL);
-    passwordSizer->Add(new wxStaticText(this, -1, "Password:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+    // Password + Button in einer Zeile
+    wxBoxSizer *passwordRowSizer = new wxBoxSizer(wxHORIZONTAL);
+    passwordRowSizer->Add(new wxStaticText(this, -1, "Password:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
 
-    passwordCtrl = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_PASSWORD);
-    passwordVisibleCtrl = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, 0);
+    passwordCtrl = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(300, -1), wxTE_PASSWORD);
+    passwordVisibleCtrl = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxSize(300, -1), 0);
     passwordVisibleCtrl->Hide();
 
-    passwordSizer->Add(passwordCtrl, 1, wxEXPAND);
-    passwordSizer->Add(passwordVisibleCtrl, 1, wxEXPAND);
+    passwordRowSizer->Add(passwordCtrl, 1, wxEXPAND | wxRIGHT, 5);
+    passwordRowSizer->Add(passwordVisibleCtrl, 1, wxEXPAND | wxRIGHT, 5);
 
-    mainSizer->Add(passwordSizer, 0, wxEXPAND | wxALL, 5);
+    // Schlüssel-Button rechts
+    generatePasswordBtn = new wxButton(
+        this,
+        wxID_ANY,
+        wxString::FromUTF8("\xF0\x9F\x94\x91"), // key-icon
+        wxDefaultPosition,
+        wxSize(35, -1)
+    );
+    generatePasswordBtn->Bind(wxEVT_BUTTON, &NewEntryDialog::OnGeneratePassword, this);
+    passwordRowSizer->Add(generatePasswordBtn, 0, wxALIGN_CENTER_VERTICAL);
 
-    // Checkbox
+    mainSizer->Add(passwordRowSizer, 0, wxEXPAND | wxALL, 5);
+
+    // Checkbox darunter
     showPasswordCheck = new wxCheckBox(this, -1, "Show password");
     mainSizer->Add(showPasswordCheck, 0, wxLEFT | wxRIGHT, 15);
 
@@ -97,4 +109,9 @@ void NewEntryDialog::OnShowPassword(wxCommandEvent &event) {
 
     Thaw();
     Layout();
+}
+
+void NewEntryDialog::OnGeneratePassword(wxCommandEvent &) {
+    PasswordGeneratorDialog dlg(this, passwordCtrl, passwordVisibleCtrl);
+    dlg.ShowModal();
 }
