@@ -8,11 +8,13 @@
 class EditEntryDialog : public wxDialog {
 public:
     EditEntryDialog(wxWindow *parent, const PasswordEntry &entry);
+
     PasswordEntry getEntry();
 
 private:
     void OnShowPassword(wxCommandEvent &event);
-    void OnGeneratePassword(wxCommandEvent& event);
+
+    void OnGeneratePassword(wxCommandEvent &event);
 
     wxTextCtrl *titleCtrl;
     wxTextCtrl *usernameCtrl;
@@ -21,7 +23,7 @@ private:
     wxTextCtrl *notesCtrl;
     wxTextCtrl *urlCtrl;
     wxCheckBox *showPasswordCheck;
-    wxButton* generatePasswordBtn;
+    wxButton *generatePasswordBtn;
     PasswordEntry entry;
 };
 
