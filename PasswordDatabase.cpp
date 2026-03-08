@@ -5,18 +5,65 @@
 #include <random>
 #include <cstring>
 
+std::string escapeNewlines(const std::string& s) {
+    std::string result;
+    for (char c : s) {
+        if (c == '\n') result += "\\n";
+        else result += c;
+    }
+    return result;
+}
+
+std::string unescapeNewlines(const std::string& s) {
+    std::string result;
+    result.reserve(s.size());
+    for (size_t i = 0; i < s.size(); ++i) {
+        if (s[i] == '\\' && i + 1 < s.size() && s[i + 1] == 'n') {
+            result += '\n';
+            ++i;
+        } else {
+            result += s[i];
+        }
+    }
+    return result;
+}
+
 std::string PasswordEntry::serialize() const {
     std::ostringstream oss;
-    oss << title << '\t' << username << '\t' << password
-            << '\t' << notes << '\t' << url << '\t'
-            << created << '\t' << modified << '\n';
+    oss << escapeNewlines(title) << '\t'
+        << escapeNewlines(username) << '\t'
+        << escapeNewlines(password) << '\t'
+        << escapeNewlines(notes) << '\t'
+        << escapeNewlines(url) << '\t'
+        << created << '\t' << modified << '\n';
     return oss.str();
 }
 
 bool PasswordEntry::deserialize(const std::string &line) {
-    std::istringstream iss(line);
-    return (iss >> title >> username >> password >> notes >> url
-            >> created >> modified) && iss.eof();
+    std::vector<std::string> fields;
+    std::string field;
+    std::stringstream ss(line);
+
+    while (std::getline(ss, field, '\t')) {
+        fields.push_back(field);
+    }
+
+    if (fields.size() != 7) return false;
+
+    title    = unescapeNewlines(fields[0]);
+    username = unescapeNewlines(fields[1]);
+    password = unescapeNewlines(fields[2]);
+    notes    = unescapeNewlines(fields[3]);
+    url      = unescapeNewlines(fields[4]);
+
+    try {
+        created  = std::stoull(fields[5]);
+        modified = std::stoull(fields[6]);
+    } catch (...) {
+        return false;
+    }
+
+    return true;
 }
 
 PasswordDatabase::PasswordDatabase(const std::string &file) : filename(file), key(nullptr) {
