@@ -1,18 +1,20 @@
-#ifndef NEW_ENTRY_DIALOG_H
-#define NEW_ENTRY_DIALOG_H
+#ifndef EDIT_ENTRY_DIALOG_H
+#define EDIT_ENTRY_DIALOG_H
 
 #pragma once
 #include <wx/wx.h>
 #include "PasswordDatabase.h"
 
-class NewEntryDialog : public wxDialog {
+class EditEntryDialog : public wxDialog {
 public:
-    NewEntryDialog(wxWindow *parent);
+    EditEntryDialog(wxWindow *parent, const PasswordEntry &entry);
 
     PasswordEntry getEntry();
 
 private:
     void OnShowPassword(wxCommandEvent &event);
+
+    void OnGeneratePassword(wxCommandEvent &event);
 
     wxTextCtrl *titleCtrl;
     wxTextCtrl *usernameCtrl;
@@ -21,7 +23,8 @@ private:
     wxTextCtrl *notesCtrl;
     wxTextCtrl *urlCtrl;
     wxCheckBox *showPasswordCheck;
+    wxButton *generatePasswordBtn;
     PasswordEntry entry;
 };
 
-#endif //NEW_ENTRY_DIALOG_H
+#endif
