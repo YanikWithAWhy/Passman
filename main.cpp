@@ -101,6 +101,8 @@ PasswordManagerFrame::PasswordManagerFrame()
     Bind(wxEVT_MENU, &PasswordManagerFrame::OnCopyUsername, this, ID_COPY_USERNAME);
     Bind(wxEVT_MENU, &PasswordManagerFrame::OnCopyPassword, this, ID_COPY_PASSWORD);
 
+    Bind(wxEVT_LIST_ITEM_ACTIVATED, &PasswordManagerFrame::OnEditEntry, this, ID_LIST_SELECT);
+
     wxAcceleratorEntry entries[2];
     entries[0].Set(wxACCEL_CTRL, (int) 'B', ID_COPY_USERNAME);
     entries[1].Set(wxACCEL_CTRL, (int) 'C', ID_COPY_PASSWORD);
@@ -306,10 +308,7 @@ void PasswordManagerFrame::enableMenuItems(bool enabled) {
 
 void PasswordManagerFrame::OnEditEntry(wxCommandEvent &event) {
     long item = entryList->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-    if (item == -1 || !database || !database->isUnlocked()) {
-        wxMessageBox("Please select an entry first!", "Error");
-        return;
-    }
+    if (item == -1 || !database || !database->isUnlocked()) return;
 
     const auto &entries = database->getEntries();
     if (item >= (long) entries.size()) return;
