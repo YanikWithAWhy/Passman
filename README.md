@@ -1,4 +1,4 @@
-# PassMan v1.0
+# PassMan
 
 A lightweight, offline password manager built with **C++17**, **wxWidgets** and **libsodium**.  
 All data is stored locally in an encrypted `.pmdb` file — nothing ever leaves your machine.
