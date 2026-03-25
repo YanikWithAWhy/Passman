@@ -1,11 +1,11 @@
 #include <memory>
 #include <wx/wx.h>
 #include "PasswordDatabase.h"
-#include "NewEntryDialog.h"
+#include "EntryUI/NewEntryDialog.h"
 #include <wx/listctrl.h>
 #include <wx/clipbrd.h>
 
-#include "EditEntryDialog.h"
+#include "EntryUI/EditEntryDialog.h"
 
 using namespace std;
 
@@ -264,9 +264,33 @@ void PasswordManagerFrame::OnNewDatabase(wxCommandEvent &event) {
 
     database = std::make_unique<PasswordDatabase>(dialog.GetPath().ToStdString());
     if (database->createNewDatabase(password1.ToStdString())) {
-        refreshList();
-        SetStatusText("New database created! (locked)", 0);
-        enableMenuItems(false);
+
+        // Datenbank entsperren, um Einträge hinzufügen zu können
+        if (database->unlock(password1.ToStdString())) {
+
+            PasswordEntry example1;
+            example1.title    = "Example: GitHub";
+            example1.username = "user@example.com";
+            example1.password = "SuperSecret123!";
+            example1.url      = "https://github.com";
+            example1.notes    = "This is an example entry. Feel free to delete it.";
+            database->addEntry(example1);
+
+            PasswordEntry example2;
+            example2.title    = "Example: Email";
+            example2.username = "user@example.com";
+            example2.password = "MyEmailPass456!";
+            example2.url      = "https://mail.example.com";
+            example2.notes    = "Another example entry. Feel free to delete it.";
+            database->addEntry(example2);
+
+            database->save();
+            refreshList();
+            SetStatusText(wxString::Format("New database created with %zu example entries", database->size()), 0);
+            enableMenuItems(true);
+        } else {
+            wxMessageBox("Database created, but could not unlock!", "Error");
+        }
     } else {
         wxMessageBox("Failed to create new database!", "Error");
     }

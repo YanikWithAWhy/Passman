@@ -1,7 +1,7 @@
 #include "EditEntryDialog.h"
 #include <chrono>
 #include <wx/sizer.h>
-#include "PasswordGeneratorDialog.h"
+#include "..\PasswordGeneratorDialog.h"
 #include "NewEntryDialog.h"
 
 EditEntryDialog::EditEntryDialog(wxWindow *parent, const PasswordEntry &initialEntry)

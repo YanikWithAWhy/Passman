@@ -3,7 +3,7 @@
 
 #pragma once
 #include <wx/wx.h>
-#include "PasswordDatabase.h"
+#include "..\PasswordDatabase.h"
 
 class EditEntryDialog : public wxDialog {
 public:

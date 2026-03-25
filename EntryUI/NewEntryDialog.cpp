@@ -2,7 +2,7 @@
 #include <chrono>
 #include <wx/sizer.h>
 #include <wx/wx.h>
-#include "PasswordGeneratorDialog.h"
+#include "..\PasswordGeneratorDialog.h"
 
 NewEntryDialog::NewEntryDialog(wxWindow *parent)
     : wxDialog(parent, -1, "New Password Entry", wxDefaultPosition, wxSize(450, 420)) {
