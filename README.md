@@ -13,9 +13,7 @@ All data is stored locally in an encrypted `.pmdb` file — nothing ever leaves 
 - Toggle password visibility in entry dialogs
 - Built-in secure password generator (length, charset configurable)
 - Copy username / password to clipboard — auto-clears after **20 seconds**
-- Double-click or press Enter on an entry to edit it instantly
-- Auto-save on window close
-- New databases are pre-populated with two example entries
+- Double-click or press Enter on an entry to edit it
 
 ---
 
@@ -117,4 +115,4 @@ passman/
 ---
 
 ## License
-[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) — © 2025 YanikWithAWhy
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) — © 2026 YanikWithAWhy
