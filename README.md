@@ -1,76 +1,120 @@
-# PassMan
+# PassMan v1.0
 
-PassMan is a desktop password manager application written in C++. It provides a secure, local-first solution for storing and managing your passwords. The application uses the robust `libsodium` library for cryptographic operations and `wxWidgets` for its graphical user interface.
+A lightweight, offline password manager built with **C++17**, **wxWidgets** and **libsodium**.  
+All data is stored locally in an encrypted `.pmdb` file — nothing ever leaves your machine.
+
+---
 
 ## Features
 
-*   **Secure Database:** Create encrypted password databases (`.pmdb` files) protected by a master password.
-*   **Strong Encryption:** Utilizes `libsodium` for key derivation (`crypto_pwhash`) and authenticated encryption (`crypto_secretbox`).
-*   **Full CRUD Operations:** Add, edit, and delete password entries.
-*   **Entry Details:** Store a title, username, password, URL, and notes for each entry.
-*   **Clipboard Integration:**
-    *   Quickly copy usernames (`Ctrl+B`) and passwords (`Ctrl+C`) to the clipboard.
-    *   For security, the clipboard is automatically cleared after 20 seconds.
-*   **User-Friendly Interface:** A clean and simple GUI built with `wxWidgets` allows for easy viewing and management of entries.
-*   **Password Visibility:** Toggle password visibility when adding or editing entries.
+- **AES-equivalent encryption** via libsodium `crypto_secretbox` (XSalsa20-Poly1305)
+- **Argon2id key derivation** (via `crypto_pwhash`) with a random 32-byte salt
+- Create, edit, delete and view password entries
+- Toggle password visibility in entry dialogs
+- Built-in secure password generator (length, charset configurable)
+- Copy username / password to clipboard — auto-clears after **20 seconds**
+- Double-click or press Enter on an entry to edit it instantly
+- Auto-save on window close
+- New databases are pre-populated with two example entries
 
-## Security
+---
 
-PassMan prioritizes the security of your data. The encryption model is built on the following principles:
+## File Format (`.pmdb`)
 
-*   **Key Derivation:** The master password is not stored directly. Instead, a strong encryption key is derived from the master password and a unique random salt using `crypto_pwhash` (Argon2id algorithm).
-*   **Authenticated Encryption:** The entire database of entries is encrypted and authenticated using `crypto_secretbox_easy` (XChaCha20-Poly1305). This ensures both confidentiality and integrity, preventing tampering with the encrypted data.
-*   **Database Format:** Each `.pmdb` file stores a header, the salt used for key derivation, a nonce for the encryption, and the final ciphertext.
-*   **Secure Memory:** The derived encryption key is locked in memory using `sodium_mlock` to prevent it from being swapped to disk.
+| Offset | Size | Content |
+|--------|------|---------|
+| 0 | 6 B | Magic header `PMDB\x02\x00` |
+| 6 | 32 B | Random salt (Argon2id) |
+| 38 | 24 B | Random nonce (XSalsa20) |
+| 62 | n B | Ciphertext + 16-byte Poly1305 MAC |
 
-## Dependencies
+Entries are stored as tab-separated lines inside the encrypted payload.
 
-To build PassMan from source, you will need the following dependencies:
+---
 
-*   A C++17 compatible compiler (e.g., MinGW-w64 on Windows)
-*   [CMake](https://cmake.org/) (version 3.16 or higher)
-*   [wxWidgets](https://www.wxwidgets.org/) (version 3.2)
-*   [libsodium](https://libsodium.gitbook.io/doc/)
+## Requirements
 
-## Building from Source
+| Dependency | Version | Source |
+|------------|---------|--------|
+| wxWidgets | 3.2+ | https://www.wxwidgets.org |
+| libsodium | latest | https://libsodium.org |
+| MinGW-w64 | via MSYS2 | https://www.msys2.org |
+| CMake | 3.16+ | https://cmake.org |
 
-The project is configured to be built with CMake. The current `CMakeLists.txt` is configured for a MinGW-w64 environment on Windows with dependencies installed via MSYS2. You may need to adjust the include and link paths to match your system's configuration.
+Install dependencies via MSYS2 (MINGW64 shell):
 
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/YanikWithAWhy/Passman.git
-    cd Passman
-    ```
+```bash
+pacman -S mingw-w64-x86_64-wxWidgets3.2 mingw-w64-x86_64-libsodium
+```
 
-2.  **Install dependencies.** On Windows with MSYS2, you can install the required libraries:
-    ```sh
-    pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-wxwidgets mingw-w64-x86_64-libsodium
-    ```
+---
 
-3.  **Configure and build with CMake:**
-    ```sh
-    mkdir build
-    cd build
-    cmake .. -G "MinGW Makefiles"
-    cmake --build .
-    ```
-    *Note: If dependencies are not in the default system paths, you may need to update the hardcoded paths in `CMakeLists.txt`.*
+## Building
 
-4.  **Run the application:**
-    The executable `cpp_passman.exe` will be located in the `build` directory.
+```bash
+git clone https://github.com/yourname/passman.git
+cd passman
+
+cmake -B build -G "MinGW Makefiles"
+cmake --build build
+```
+
+The compiled binary will be at `build/cpp_passman.exe`.
+
+---
 
 ## Usage
 
-1.  Launch the `cpp_passman` executable.
-2.  To start, create a new database via **File > New Database...**. Choose a location to save your `.pmdb` file and set a strong master password.
-3.  To open an existing database, go to **File > Open Database...** and enter your master password.
-4.  Once the database is unlocked, you can manage your entries:
-    *   **File > New Entry** (Ctrl+Shift+N): Add a new password entry.
-    *   **File > Edit Entry** (Ctrl+E) or right-click: Modify the selected entry.
-    *   **File > Delete Entry** (Del) or right-click: Remove the selected entry.
-5.  Select an entry and use the context menu or keyboard shortcuts to copy credentials:
-    *   **Copy Username:** `Ctrl+B`
-    *   **Copy Password:** `Ctrl+C`
-6.  Your changes are saved automatically when you close the application, or you can save manually with **File > Save** (Ctrl+S).
+### Create a new database
+`File → New Database…` — choose a file path and set a master password.  
+Two example entries are added automatically so you can explore the UI right away.
 
-Generated using https://www.gitread.dev/ using commit b5a71b57c06f1bbf38128ad3c37fe6e624c31b17.
+### Open an existing database
+`File → Open Database…` — select your `.pmdb` file and enter your master password.
+
+### Keyboard shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+N` | New Database |
+| `Ctrl+O` | Open Database |
+| `Ctrl+Shift+N` | New Entry |
+| `Ctrl+E` | Edit selected Entry |
+| `Del` | Delete selected Entry |
+| `Ctrl+S` | Save |
+| `Ctrl+B` | Copy Username |
+| `Ctrl+C` | Copy Password |
+| `Ctrl+Q` | Exit |
+| `Double-click` / `Enter` | Edit Entry |
+
+### Right-click context menu
+Right-clicking an entry opens a context menu with Edit, Delete, Copy Username and Copy Password.
+
+---
+
+## Project Structure
+
+```
+passman/
+├── main.cpp                        # App entry point, main frame & UI logic
+├── PasswordDatabase.h/.cpp         # Encryption, serialization, entry management
+├── PasswordGeneratorDialog.h/.cpp  # Password generator dialog
+├── EntryUI/
+│   ├── NewEntryDialog.h/.cpp       # Dialog for creating entries
+│   └── EditEntryDialog.h/.cpp      # Dialog for editing entries
+└── CMakeLists.txt
+```
+
+---
+
+## Security Notes
+
+- The master password is **never stored** — only the derived key is held in memory, protected via `sodium_mlock`.
+- A fresh random **nonce** is generated on every save, so ciphertexts are never repeated.
+- Clipboard contents are **automatically cleared** 20 seconds after copying a username or password.
+- All sensitive memory is freed with `sodium_free` when the database is locked or the app exits.
+
+---
+
+## License
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) — © 2025 YanikWithAWhy
