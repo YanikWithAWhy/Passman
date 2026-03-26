@@ -32,7 +32,7 @@ Entries are stored as tab-separated lines inside the encrypted payload.
 
 ## Download
 
-[![Download](https://img.shields.io/github/v/release/YanikWithAWhy/passman?label=Download&logo=github)](https://github.com/YanikWithAWhy/passman/releases/latest)
+[![Download](https://img.shields.io/github/v/release/YanikWithAWhy/Passman?label=Download&logo=github)](https://github.com/YanikWithAWhy/Passman/releases/latest)
 
 ---
 
