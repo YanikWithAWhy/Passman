@@ -32,8 +32,6 @@ Entries are stored as tab-separated lines inside the encrypted payload.
 
 ## Download
 
-Aktuelle Version: **v1.0.0**
-
 [![Download](https://img.shields.io/github/v/release/YanikWithAWhy/passman?label=Download&logo=github)](https://github.com/YanikWithAWhy/passman/releases/latest)
 
 ---
