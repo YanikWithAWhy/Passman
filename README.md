@@ -68,7 +68,7 @@ The compiled binary will be at `build/cpp_passman.exe`.
 
 ### Create a new database
 `File → New Database…` — choose a file path and set a master password.  
-Two example entries are added automatically so you can explore the UI right away.
+Two example entries are added automatically.
 
 ### Open an existing database
 `File → Open Database…` — select your `.pmdb` file and enter your master password.
