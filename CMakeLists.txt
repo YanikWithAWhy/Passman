@@ -27,14 +27,23 @@ add_executable(cpp_passman main.cpp
 )
 
 target_link_libraries(cpp_passman
-        wx_baseu-3.2
-        wx_mswu_core-3.2
+        -Wl,--start-group
         wx_mswu_adv-3.2
+        wx_mswu_core-3.2
+        wx_baseu-3.2
         wxexpat-3.2
         wxjpeg-3.2
         wxpng-3.2
         wxtiff-3.2
         wxzlib-3.2
+        -Wl,--end-group
         gdi32 comdlg32 winspool winmm shell32 ole32 oleaut32 uuid odbc32 odbccp32
+        uxtheme
+        comctl32
+        shlwapi
+        version
+        oleacc
         ${SODIUM_LIB}
 )
+
+target_link_options(cpp_passman PRIVATE -static -static-libgcc -static-libstdc++)
