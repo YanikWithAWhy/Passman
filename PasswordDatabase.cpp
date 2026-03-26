@@ -140,19 +140,15 @@ bool PasswordDatabase::deriveKey(const std::string &password) {
 }
 
 bool PasswordDatabase::unlock(const std::string &masterPassword) {
-    printf("DEBUG: Trying to unlock %s\n", filename.c_str());
 
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
-        printf("DEBUG: Could not open file: %s\n", filename.c_str());
         return false;
     }
 
     auto filesize = file.tellg();
-    printf("DEBUG: File size: %lld bytes\n", (long long) filesize);
 
     if (filesize < 62) {
-        printf("DEBUG: FILE TOO SMALL: %lld bytes\n", (long long) filesize);
         return false;
     }
 
@@ -160,38 +156,28 @@ bool PasswordDatabase::unlock(const std::string &masterPassword) {
 
     char header[6];
     if (!file.read(header, 6) || memcmp(header, "PMDB\x02\x00", 6) != 0) {
-        printf("DEBUG: HEADER INVALID\n");
         return false;
     }
-    printf("DEBUG: HEADER OK\n");
 
     if (!file.read((char *) salt.data(), salt.size())) {
-        printf("DEBUG: SALT READ FAILED\n");
         return false;
     }
-    printf("DEBUG: SALT LOADED\n");
 
     std::array<unsigned char, crypto_secretbox_NONCEBYTES> nonce;
     if (!file.read((char *) nonce.data(), nonce.size())) {
-        printf("DEBUG: NONCE READ FAILED\n");
         return false;
     }
-    printf("DEBUG: NONCE LOADED\n");
 
     std::vector<unsigned char> ciphertext((std::istreambuf_iterator<char>(file)),
                                           std::istreambuf_iterator<char>());
-    printf("DEBUG: Ciphertext size: %zu bytes\n", ciphertext.size());
 
     if (ciphertext.size() < crypto_secretbox_MACBYTES) {
-        printf("DEBUG: CIPHERTEXT TOO SMALL\n");
         return false;
     }
 
     if (!deriveKey(masterPassword)) {
-        printf("DEBUG: KEY DERIVATION FAILED\n");
         return false;
     }
-    printf("DEBUG: KEY DERIVED\n");
 
     std::vector<unsigned char> decrypted(ciphertext.size() - crypto_secretbox_MACBYTES);
     int result = crypto_secretbox_open_easy(
@@ -203,13 +189,11 @@ bool PasswordDatabase::unlock(const std::string &masterPassword) {
     );
 
     if (result != 0) {
-        printf("DEBUG: DECRYPTION FAILED (wrong password/corrupted!) code=%d\n", result);
         unlockKey();
         sodium_free(key);
         key = nullptr;
         return false;
     }
-    printf("DEBUG: DECRYPTION SUCCESS\n");
 
     std::string plaintext(reinterpret_cast<char *>(decrypted.data()), decrypted.size());
     entries.clear();
@@ -224,10 +208,8 @@ bool PasswordDatabase::unlock(const std::string &masterPassword) {
             }
         }
     }
-    printf("DEBUG: Loaded %zu entries\n", entries.size());
 
     unlocked = true;
-    printf("DEBUG: UNLOCK SUCCESS\n");
     return true;
 }
 
@@ -250,13 +232,11 @@ bool PasswordDatabase::cryptoSave() {
             nonce.data(),
             key
         ) != 0) {
-        printf("DEBUG: ENCRYPTION FAILED\n");
         return false;
     }
 
     std::ofstream file(filename, std::ios::binary);
     if (!file) {
-        printf("DEBUG: CANNOT WRITE FILE\n");
         return false;
     }
 
@@ -266,8 +246,6 @@ bool PasswordDatabase::cryptoSave() {
     file.write((char *) ciphertext.data(), ciphertext.size());
 
     bool success = file.good();
-    printf("DEBUG: SAVED: %zu bytes plaintext -> %zu bytes ciphertext\n",
-           plaintext.size(), ciphertext.size());
 
     return success;
 }
@@ -289,7 +267,6 @@ void PasswordDatabase::unlockKey() {
 
 bool PasswordDatabase::save() {
     if (!unlocked || !key) {
-        printf("DEBUG: Cannot save: not unlocked\n");
         return false;
     }
     bool result = cryptoSave();
