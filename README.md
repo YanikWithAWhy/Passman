@@ -8,11 +8,11 @@ All data is stored locally in an encrypted `.pmdb` file.
 ## Features
 
 - **AES-equivalent encryption** via libsodium `crypto_secretbox` (XSalsa20-Poly1305)
-- **Argon2id key derivation** (via `crypto_pwhash`) with a random 32-byte salt
+- **Argon2id key derivation** (via `crypto_pwhash`) with a 32-byte salt
 - Create, edit, delete and view password entries
 - Toggle password visibility in entry dialogs
 - Built-in secure password generator (length, charset configurable)
-- Copy username / password to clipboard — auto-clears after **20 seconds**
+- Copy username / password to clipboard
 - Double-click or press Enter on an entry to edit it
 
 ---
@@ -114,7 +114,7 @@ passman/
 ## Security Notes
 
 - The master password is **never stored** — only the derived key is held in memory, protected via `sodium_mlock`.
-- A fresh random **nonce** is generated on every save, so ciphertexts are never repeated.
+- A fresh **nonce** is generated on every save, so ciphertexts are never repeated.
 - Clipboard contents are **automatically cleared** 20 seconds after copying a username or password.
 - All sensitive memory is freed with `sodium_free` when the database is locked or the app exits.
 
