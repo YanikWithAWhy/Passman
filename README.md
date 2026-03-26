@@ -53,7 +53,7 @@ pacman -S mingw-w64-x86_64-wxWidgets3.2 mingw-w64-x86_64-libsodium
 ## Building
 
 ```bash
-git clone https://github.com/yourname/passman.git
+git clone https://github.com/YanikWithAWhy/Passman.git
 cd passman
 
 cmake -B build -G "MinGW Makefiles"
