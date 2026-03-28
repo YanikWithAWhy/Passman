@@ -18,12 +18,12 @@ find_file(SODIUM_STATIC_LIB
 
 if (NOT SODIUM_STATIC_LIB)
     message(FATAL_ERROR
-            "libsodium.a nicht gefunden!\n"
-            "Bitte installieren mit: pacman -S mingw-w64-x86_64-libsodium"
+            "cannot find libsodium.a\n"
+            "please install using: pacman -S mingw-w64-x86_64-libsodium"
     )
 endif ()
 
-message(STATUS "Verwende statisches libsodium: ${SODIUM_STATIC_LIB}")
+message(STATUS "using static libsodium: ${SODIUM_STATIC_LIB}")
 
 add_executable(cpp_passman
         main.cpp
