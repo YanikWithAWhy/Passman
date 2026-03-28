@@ -10,12 +10,23 @@ include_directories(
 
 link_directories("C:/msys64/mingw64/lib")
 
-find_library(SODIUM_LIB sodium PATHS "C:/msys64/mingw64/lib")
-if (NOT SODIUM_LIB)
-    message(FATAL_ERROR "libsodium not found!")
+find_file(SODIUM_STATIC_LIB
+        NAMES libsodium.a
+        PATHS "C:/msys64/mingw64/lib"
+        NO_DEFAULT_PATH
+)
+
+if (NOT SODIUM_STATIC_LIB)
+    message(FATAL_ERROR
+            "libsodium.a nicht gefunden!\n"
+            "Bitte installieren mit: pacman -S mingw-w64-x86_64-libsodium"
+    )
 endif ()
 
-add_executable(cpp_passman main.cpp
+message(STATUS "Verwende statisches libsodium: ${SODIUM_STATIC_LIB}")
+
+add_executable(cpp_passman
+        main.cpp
         PasswordDatabase.cpp
         PasswordDatabase.h
         EntryUI/NewEntryDialog.cpp
@@ -24,6 +35,12 @@ add_executable(cpp_passman main.cpp
         EntryUI/EditEntryDialog.h
         PasswordGeneratorDialog.cpp
         PasswordGeneratorDialog.h
+)
+
+target_link_options(cpp_passman PRIVATE
+        -static
+        -static-libgcc
+        -static-libstdc++
 )
 
 target_link_libraries(cpp_passman
@@ -37,13 +54,9 @@ target_link_libraries(cpp_passman
         wxtiff-3.2
         wxzlib-3.2
         -Wl,--end-group
-        gdi32 comdlg32 winspool winmm shell32 ole32 oleaut32 uuid odbc32 odbccp32
-        uxtheme
-        comctl32
-        shlwapi
-        version
-        oleacc
-        ${SODIUM_LIB}
-)
 
-target_link_options(cpp_passman PRIVATE -static -static-libgcc -static-libstdc++)
+        gdi32 comdlg32 winspool winmm shell32 ole32 oleaut32
+        uuid odbc32 odbccp32 uxtheme comctl32 shlwapi version oleacc
+
+        ${SODIUM_STATIC_LIB}
+)
