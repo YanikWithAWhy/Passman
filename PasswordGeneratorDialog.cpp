@@ -1,147 +1,152 @@
+
 #include "PasswordGeneratorDialog.h"
-#include <wx/sizer.h>
-#include <random>
-#include <algorithm>
+#include <sodium.h>
+#include <wx/spinctrl.h>
+#include <stdexcept>
+#include <cstring>
 
-wxBEGIN_EVENT_TABLE(PasswordGeneratorDialog, wxDialog)
-    EVT_CHECKBOX(-1, PasswordGeneratorDialog::OnCheckbox)
-    EVT_TEXT(wxID_ANY, PasswordGeneratorDialog::OnLengthChange)
-    EVT_BUTTON(wxID_OK, PasswordGeneratorDialog::OnOK)
-    EVT_BUTTON(wxID_CANCEL, PasswordGeneratorDialog::OnCancel)
-wxEND_EVENT_TABLE()
 
-PasswordGeneratorDialog::PasswordGeneratorDialog(wxWindow* parent,
-                                               wxTextCtrl* targetPasswordCtrl,
-                                               wxTextCtrl* targetVisibleCtrl)
-    : wxDialog(parent, -1, "Passwort Generator", wxDefaultPosition, wxSize(350, 300))
-    , targetPasswordCtrl(targetPasswordCtrl)
-    , targetVisibleCtrl(targetVisibleCtrl)
-    , pendingPassword("") {
+static char securePickChar(const std::string& charset) {
+    if (charset.empty())
+        throw std::invalid_argument("charset must not be empty");
 
-    if (targetPasswordCtrl && targetVisibleCtrl) {
-        originalPassword = targetPasswordCtrl->GetValue();
-        originalVisiblePassword = targetVisibleCtrl->GetValue();
-    }
+    const size_t   n     = charset.size();
+    const unsigned limit = 256 - (256 % n);
 
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+    unsigned char pick;
+    do {
+        randombytes_buf(&pick, 1);
+    } while (pick >= limit);
 
-    wxBoxSizer* lengthSizer = new wxBoxSizer(wxHORIZONTAL);
-    lengthSizer->Add(new wxStaticText(this, -1, "Length:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
-    lengthCtrl = new wxTextCtrl(this, wxID_ANY, "16", wxDefaultPosition, wxSize(60, -1));
-    lengthCtrl->Bind(wxEVT_TEXT, &PasswordGeneratorDialog::OnLengthChange, this);
-    lengthSizer->Add(lengthCtrl, 0);
-    mainSizer->Add(lengthSizer, 0, wxEXPAND | wxALL, 10);
-
-    lowercaseCheck = new wxCheckBox(this, -1, "lower case letters (a-z)");
-    lowercaseCheck->SetValue(true);
-    mainSizer->Add(lowercaseCheck, 0, wxLEFT | wxRIGHT, 15);
-
-    uppercaseCheck = new wxCheckBox(this, -1, "upper case letters (A-Z)");
-    uppercaseCheck->SetValue(true);
-    mainSizer->Add(uppercaseCheck, 0, wxLEFT | wxRIGHT, 15);
-
-    numbersCheck = new wxCheckBox(this, -1, "numbers (0-9)");
-    numbersCheck->SetValue(true);
-    mainSizer->Add(numbersCheck, 0, wxLEFT | wxRIGHT, 15);
-
-    symbolsCheck = new wxCheckBox(this, -1, "special characters (!@#$%^&*)");
-    symbolsCheck->SetValue(true);
-    mainSizer->Add(symbolsCheck, 0, wxLEFT | wxRIGHT, 15);
-
-    wxSizer* dialogButtons = CreateStdDialogButtonSizer(wxOK | wxCANCEL);
-    mainSizer->Add(dialogButtons, 0, wxALIGN_RIGHT | wxALL, 10);
-
-    SetSizerAndFit(mainSizer);
-    Center();
-
-    wxCommandEvent dummy;
-    OnLengthChange(dummy);
+    return charset[pick % n];
 }
 
-void PasswordGeneratorDialog::OnCheckbox(wxCommandEvent& event) {
-    wxCommandEvent dummy;
-    OnLengthChange(dummy);
+PasswordGeneratorDialog::PasswordGeneratorDialog(wxWindow* parent)
+    : wxDialog(parent, wxID_ANY, "Password Generator",
+               wxDefaultPosition, wxSize(260, 240))
+{
+    buildUI();
 }
 
-void PasswordGeneratorDialog::OnLengthChange(wxCommandEvent& event) {
-    int length;
-    try {
-        length = std::stoi(lengthCtrl->GetValue().ToStdString());
-        if (length < 8 || length > 128) {
-            pendingPassword = "";
-            return;
+PasswordGeneratorDialog::PasswordGeneratorDialog(wxWindow*   parent,
+                                                  wxTextCtrl* target,
+                                                  wxTextCtrl* visible)
+    : wxDialog(parent, wxID_ANY, "Password Generator",
+               wxDefaultPosition, wxSize(260, 240))
+    , targetCtrl(target)
+    , visibleCtrl(visible)
+{
+    buildUI();
+}
+
+void PasswordGeneratorDialog::buildUI() {
+    auto* sizer = new wxBoxSizer(wxVERTICAL);
+
+    auto* lenRow = new wxBoxSizer(wxHORIZONTAL);
+    lenRow->Add(new wxStaticText(this, wxID_ANY, "Length:"),
+                0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 6);
+    spinLength = new wxSpinCtrl(this, wxID_ANY, "20", wxDefaultPosition,
+                                 wxDefaultSize, wxSP_ARROW_KEYS, 8, 128, 20);
+    lenRow->Add(spinLength, 1);
+    sizer->Add(lenRow, 0, wxEXPAND | wxALL, 6);
+
+    chkUpper   = new wxCheckBox(this, wxID_ANY, "Uppercase  (A-Z)");
+    chkLower   = new wxCheckBox(this, wxID_ANY, "Lowercase  (a-z)");
+    chkDigits  = new wxCheckBox(this, wxID_ANY, "Digits     (0-9)");
+    chkSymbols = new wxCheckBox(this, wxID_ANY, "Symbols    (!@#$%^&*...)");
+
+    chkUpper->SetValue(true);
+    chkLower->SetValue(true);
+    chkDigits->SetValue(true);
+    chkSymbols->SetValue(true);
+
+    sizer->Add(chkUpper,   0, wxLEFT | wxRIGHT | wxTOP, 6);
+    sizer->Add(chkLower,   0, wxLEFT | wxRIGHT | wxTOP, 4);
+    sizer->Add(chkDigits,  0, wxLEFT | wxRIGHT | wxTOP, 4);
+    sizer->Add(chkSymbols, 0, wxLEFT | wxRIGHT | wxTOP, 4);
+
+    auto* btnGen = new wxButton(this, wxID_ANY, "Generate");
+    sizer->Add(btnGen, 0, wxEXPAND | wxALL, 6);
+
+    SetSizer(sizer);
+
+    btnGen->Bind(wxEVT_BUTTON, &PasswordGeneratorDialog::OnGenerate, this);
+
+    Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& e) {
+        if (IsModal()) EndModal(wxID_OK);
+        else           e.Skip();
+    });
+}
+
+bool PasswordGeneratorDialog::generatePassword() {
+    std::string charset;
+    if (chkUpper->GetValue())   charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (chkLower->GetValue())   charset += "abcdefghijklmnopqrstuvwxyz";
+    if (chkDigits->GetValue())  charset += "0123456789";
+    if (chkSymbols->GetValue()) charset += "!@#$%^&*()-_=+[]{}|;:,.<>?";
+
+    if (charset.empty()) return false;
+
+    const int length = spinLength->GetValue();
+    if (length < 1 || length > 128) return false;
+
+    static constexpr int MAX_RETRIES = 100;
+    for (int attempt = 0; attempt < MAX_RETRIES; ++attempt) {
+        std::string pwd;
+        pwd.reserve(static_cast<size_t>(length));
+        for (int i = 0; i < length; ++i)
+            pwd += securePickChar(charset);
+
+        auto hasClass = [&](const std::string& cls) {
+            return pwd.find_first_of(cls) != std::string::npos;
+        };
+        bool ok = true;
+        if (chkUpper->GetValue()   && !hasClass("ABCDEFGHIJKLMNOPQRSTUVWXYZ")) ok = false;
+        if (chkLower->GetValue()   && !hasClass("abcdefghijklmnopqrstuvwxyz")) ok = false;
+        if (chkDigits->GetValue()  && !hasClass("0123456789"))                  ok = false;
+        if (chkSymbols->GetValue() && !hasClass("!@#$%^&*()-_=+[]{}|;:,.<>?")) ok = false;
+
+        if (!ok) {
+            sodium_memzero(&pwd[0], pwd.size());
+            continue;
         }
-    } catch (...) {
-        pendingPassword = "";
+
+        if (!generatedPassword.empty())
+            sodium_memzero(const_cast<char*>(generatedPassword.data()),
+                           generatedPassword.size());
+        generatedPassword = pwd;
+        sodium_memzero(&pwd[0], pwd.size());
+        return true;
+    }
+    return false;
+}
+
+void PasswordGeneratorDialog::OnGenerate(wxCommandEvent&) {
+    if (!generatePassword()) {
+        wxMessageBox("Please select at least one character set.",
+                     "No charset selected", wxOK | wxICON_WARNING, this);
         return;
     }
 
-    bool useLower = lowercaseCheck->IsChecked();
-    bool useUpper = uppercaseCheck->IsChecked();
-    bool useNums = numbersCheck->IsChecked();
-    bool useSyms = symbolsCheck->IsChecked();
+    wxString out = wxString::FromUTF8(generatedPassword.c_str());
 
-    if (useLower || useUpper || useNums || useSyms) {
-        pendingPassword = generateSecurePassword(length, useLower, useUpper, useNums, useSyms);
-    } else {
-        pendingPassword = "";
-    }
+    if (targetCtrl)  targetCtrl->SetValue(out);
+    if (visibleCtrl) visibleCtrl->SetValue(out);
 
-}
-
-void PasswordGeneratorDialog::OnOK(wxCommandEvent& event) {
-
-    if (!pendingPassword.empty() && targetPasswordCtrl && targetVisibleCtrl) {
-        wxString pwd = wxString::FromUTF8(pendingPassword.c_str());
-        targetPasswordCtrl->SetValue(pwd);
-        targetVisibleCtrl->SetValue(pwd);
-    }
     EndModal(wxID_OK);
 }
 
-void PasswordGeneratorDialog::OnCancel(wxCommandEvent& event) {
-
-    if (targetPasswordCtrl && targetVisibleCtrl) {
-        targetPasswordCtrl->SetValue(originalPassword);
-        targetVisibleCtrl->SetValue(originalVisiblePassword);
+void PasswordGeneratorDialog::OnCancel(wxCommandEvent&) {
+    if (!generatedPassword.empty()) {
+        sodium_memzero(const_cast<char*>(generatedPassword.data()),
+                       generatedPassword.size());
+        generatedPassword.clear();
     }
     EndModal(wxID_CANCEL);
 }
 
-std::string PasswordGeneratorDialog::generateSecurePassword(int length,
-                                                          bool useLower, bool useUpper,
-                                                          bool useNumbers, bool useSymbols) {
-    std::string charset;
-    if (useLower) charset += "abcdefghijklmnopqrstuvwxyz";
-    if (useUpper) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    if (useNumbers) charset += "0123456789";
-    if (useSymbols) charset += "!@#$%^&*()_+-=[]{}|;:,.<>?";
+void PasswordGeneratorDialog::OnOK(wxCommandEvent&) { EndModal(wxID_OK); }
 
-    if (charset.empty()) return "";
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, charset.size() - 1);
-
-    std::string password;
-    password.reserve(length);
-    for (int i = 0; i < length; ++i) {
-        password += charset[dis(gen)];
-    }
-
-    int pos = 0;
-    if (useLower && password.find_first_of("abcdefghijklmnopqrstuvwxyz") == std::string::npos && pos < length) {
-        password[pos++] = 'a' + dis(gen) % 26;
-    }
-    if (useUpper && password.find_first_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ") == std::string::npos && pos < length) {
-        password[pos++] = 'A' + dis(gen) % 26;
-    }
-    if (useNumbers && password.find_first_of("0123456789") == std::string::npos && pos < length) {
-        password[pos++] = '0' + dis(gen) % 10;
-    }
-    if (useSymbols && password.find_first_of("!@#$%^&*()_+-=[]{}|;:,.<>?") == std::string::npos && pos < length) {
-        password[pos] = "!@#$%^&*()_+-=[]{}|;:,.<>?"[dis(gen) % 28];
-    }
-
-    return password;
+wxString PasswordGeneratorDialog::getPassword() const {
+    return wxString::FromUTF8(generatedPassword.c_str());
 }

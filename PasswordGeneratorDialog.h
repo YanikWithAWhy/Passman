@@ -1,34 +1,35 @@
-#ifndef PASSWORD_GENERATOR_DIALOG_H
-#define PASSWORD_GENERATOR_DIALOG_H
-
+#pragma once
 #include <wx/wx.h>
-#include <wx/clipbrd.h>
+#include <wx/spinctrl.h>
+#include <string>
 
 class PasswordGeneratorDialog : public wxDialog {
 public:
-    PasswordGeneratorDialog(wxWindow* parent, wxTextCtrl* targetPasswordCtrl, wxTextCtrl* targetVisibleCtrl);
+    explicit PasswordGeneratorDialog(wxWindow* parent);
+
+    PasswordGeneratorDialog(wxWindow*    parent,
+                            wxTextCtrl*  targetCtrl,
+                            wxTextCtrl*  visibleCtrl);
+
+    wxString getPassword() const;
 
 private:
-    wxTextCtrl* lengthCtrl;
-    wxCheckBox* lowercaseCheck;
-    wxCheckBox* uppercaseCheck;
-    wxCheckBox* numbersCheck;
-    wxCheckBox* symbolsCheck;
-    wxTextCtrl* targetPasswordCtrl;
-    wxTextCtrl* targetVisibleCtrl;
+    void buildUI();
 
-    std::string pendingPassword;
-    wxString originalPassword;
-    wxString originalVisiblePassword;
+    wxSpinCtrl* spinLength  = nullptr;
+    wxCheckBox* chkUpper    = nullptr;
+    wxCheckBox* chkLower    = nullptr;
+    wxCheckBox* chkDigits   = nullptr;
+    wxCheckBox* chkSymbols  = nullptr;
 
-    void OnCheckbox(wxCommandEvent& event);
-    void OnLengthChange(wxCommandEvent& event);
-    void OnOK(wxCommandEvent& event);
-    void OnCancel(wxCommandEvent& event);
+    wxTextCtrl* targetCtrl  = nullptr;
+    wxTextCtrl* visibleCtrl = nullptr;
 
-    std::string generateSecurePassword(int length, bool useLower, bool useUpper, bool useNumbers, bool useSymbols);
+    std::string generatedPassword;
 
-    wxDECLARE_EVENT_TABLE();
+    void OnGenerate(wxCommandEvent&);
+    void OnOK(wxCommandEvent&);
+    void OnCancel(wxCommandEvent&);
+
+    bool generatePassword();
 };
-
-#endif
